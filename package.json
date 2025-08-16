@@ -1,0 +1,24 @@
+{
+  "name": "@socket.io/bun-engine",
+  "version": "0.0.1",
+  "description": "The Socket.IO low-level engine for Bun",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "compile": "rm -rf ./dist && tsc",
+    "format:check": "prettier --check \"lib/**/*.ts\" \"test/**/*.ts\"",
+    "format:fix": "prettier --write \"lib/**/*.ts\" \"test/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.20",
+    "prettier": "^3.6.2",
+    "socket.io": "^4.8.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "license": "MIT"
+}
