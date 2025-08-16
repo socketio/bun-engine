@@ -20,5 +20,10 @@
   "peerDependencies": {
     "typescript": "^5"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/socketio/bun-engine#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/socketio/bun-engine.git"
+  }
 }
