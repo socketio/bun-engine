@@ -17,6 +17,7 @@ io.bind(engine);
 Bun.serve({
   ...engine.handler(),
   port: 3000,
+  idleTimeout: 30, // must be greater than the "pingInterval" option of the engine, which defaults to 25 seconds
 });
 
 io.on("connection", (socket) => {
