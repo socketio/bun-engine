@@ -1,5 +1,29 @@
 # @socket.io/bun-engine
 
+A highly efficient, Bun-powered engine for Socket.IO, designed to enhance real-time communication performance.
+
+This package provides a custom engine for Socket.IO that leverages the speed and scalability of Bun to handle WebSocket
+connections seamlessly.
+
+Reference: https://socket.io/
+
+**Table of contents**
+
+<!-- TOC -->
+  * [How to use](#how-to-use)
+  * [Options](#options)
+    * [`path`](#path)
+    * [`pingTimeout`](#pingtimeout)
+    * [`pingInterval`](#pinginterval)
+    * [`upgradeTimeout`](#upgradetimeout)
+    * [`maxHttpBufferSize`](#maxhttpbuffersize)
+    * [`allowRequest`](#allowrequest)
+    * [`cors`](#cors)
+    * [`editHandshakeHeaders`](#edithandshakeheaders)
+    * [`editResponseHeaders`](#editresponseheaders)
+  * [License](#license)
+<!-- TOC -->
+
 ## How to use
 
 ```js
