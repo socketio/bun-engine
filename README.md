@@ -11,6 +11,8 @@ Reference: https://socket.io/
 
 <!-- TOC -->
   * [How to use](#how-to-use)
+    * [With Bun's HTTP server](#with-buns-http-server)
+    * [With Hono](#with-hono)
   * [Options](#options)
     * [`path`](#path)
     * [`pingTimeout`](#pingtimeout)
@@ -26,6 +28,8 @@ Reference: https://socket.io/
 
 ## How to use
 
+### With Bun's HTTP server
+
 ```js
 import { Server as Engine } from "@socket.io/bun-engine";
 import { Server } from "socket.io";
@@ -38,16 +42,58 @@ const engine = new Engine({
 
 io.bind(engine);
 
-Bun.serve({
-  ...engine.handler(),
+io.on("connection", (socket) => {
+  // ...
+});
+
+export default {
   port: 3000,
   idleTimeout: 30, // must be greater than the "pingInterval" option of the engine, which defaults to 25 seconds
-});
+
+  ...engine.handler(),
+};
+```
+
+### With Hono
+
+```js
+import { Server as Engine } from "@socket.io/bun-engine";
+import { Server } from "socket.io";
+import { Hono } from "hono";
+
+const io = new Server();
+
+const engine = new Engine();
+
+io.bind(engine);
 
 io.on("connection", (socket) => {
   // ...
 });
+
+const app = new Hono();
+
+const { websocket } = engine.handler();
+
+export default {
+  port: 3000,
+  idleTimeout: 30, // must be greater than the "pingInterval" option of the engine, which defaults to 25 seconds
+
+  fetch(req, server) {
+    const url = new URL(req.url);
+
+    if (url.pathname === "/socket.io/") {
+      return engine.handleRequest(req, server);
+    } else {
+      return app.fetch(req, server);
+    }
+  },
+
+  websocket
+}
 ```
+
+Reference: https://hono.dev/docs/
 
 ## Options
 
