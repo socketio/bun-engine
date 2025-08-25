@@ -38,7 +38,7 @@ export class Polling extends Transport {
    * @private
    */
   private onPollRequest(
-    _req: Request,
+    req: Request,
     responseHeaders: Headers,
   ): Promise<Response> {
     if (this.pollingPromise) {
@@ -50,6 +50,10 @@ export class Polling extends Transport {
     }
 
     debug("new polling request");
+
+    req.signal.addEventListener("abort", () => {
+      this.onError("polling request aborted");
+    });
 
     return new Promise<Response>((resolve, reject) => {
       this.pollingPromise = { resolve, reject, responseHeaders };
@@ -71,6 +75,10 @@ export class Polling extends Transport {
     responseHeaders: Headers,
   ): Promise<Response> {
     debug("new data request");
+
+    req.signal.addEventListener("abort", () => {
+      this.onError("data request aborted");
+    });
 
     const data = await req.text();
 

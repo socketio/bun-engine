@@ -25,6 +25,7 @@ async function initSocketIOConnection() {
   return socket;
 }
 
+// imported from https://github.com/socketio/socket.io/tree/main/docs/socket.io-protocol/v5-test-suite
 describe("Socket.IO protocol", () => {
   beforeAll(() => {
     const io = new Server();

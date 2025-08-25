@@ -14,6 +14,7 @@ async function initLongPollingSession() {
   return JSON.parse(content.substring(1)).sid;
 }
 
+// imported from https://github.com/socketio/socket.io/blob/main/docs/engine.io-protocol/v4-test-suite
 describe("Engine.IO protocol", () => {
   beforeAll(() => {
     const engine = new Server({
@@ -306,6 +307,25 @@ describe("Engine.IO protocol", () => {
 
         // the Node.js implementation uses HTTP 500 (Internal Server Error), but HTTP 400 seems more suitable
         expect(pollResponses[1].status).toEqual(400);
+
+        const pollResponse = await fetch(
+          `${URL}/engine.io/?EIO=4&transport=polling&sid=${sid}`,
+        );
+
+        expect(pollResponse.status).toEqual(400);
+      });
+
+      it("closes the session upon cancelled polling request", async () => {
+        const sid = await initLongPollingSession();
+        const controller = new AbortController();
+
+        fetch(`${URL}/engine.io/?EIO=4&transport=polling&sid=${sid}`, {
+          signal: controller.signal,
+        }).catch(() => {});
+
+        await sleep(5);
+
+        controller.abort();
 
         const pollResponse = await fetch(
           `${URL}/engine.io/?EIO=4&transport=polling&sid=${sid}`,
