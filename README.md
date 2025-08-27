@@ -159,7 +159,7 @@ Example:
 
 ```ts
 const engine = new Server({
-  allowRequest: (req, connInfo) => {
+  allowRequest: (req, server) => {
     return Promise.reject("thou shall not pass");
   },
 });
@@ -195,7 +195,7 @@ Example:
 
 ```ts
 const engine = new Server({
-  editHandshakeHeaders: (responseHeaders, req, connInfo) => {
+  editHandshakeHeaders: (responseHeaders, req, server) => {
     responseHeaders.set("set-cookie", "sid=1234");
   },
 });
@@ -211,7 +211,7 @@ Example:
 
 ```ts
 const engine = new Server({
-  editResponseHeaders: (responseHeaders, req, connInfo) => {
+  editResponseHeaders: (responseHeaders, req, server) => {
     responseHeaders.set("my-header", "abcd");
   },
 });

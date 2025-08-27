@@ -42,7 +42,7 @@ export interface ServerOptions {
    * A function that receives a given handshake or upgrade request as its first parameter,
    * and can decide whether to continue or not.
    */
-  allowRequest?: (req: Request) => Promise<void>;
+  allowRequest?: (req: Request, server: Bun.Server) => Promise<void>;
   /**
    * The options related to Cross-Origin Resource Sharing (CORS)
    */
@@ -53,6 +53,7 @@ export interface ServerOptions {
   editHandshakeHeaders?: (
     responseHeaders: Headers,
     req: Request,
+    server: Bun.Server,
   ) => void | Promise<void>;
   /**
    * A function that allows to edit the response headers of all requests
@@ -60,6 +61,7 @@ export interface ServerOptions {
   editResponseHeaders?: (
     responseHeaders: Headers,
     req: Request,
+    server: Bun.Server,
   ) => void | Promise<void>;
 }
 
@@ -71,7 +73,7 @@ interface ConnectionError {
 }
 
 interface ServerReservedEvents {
-  connection: (socket: Socket, request: Request) => void;
+  connection: (socket: Socket, request: Request, server: Bun.Server) => void;
   connection_error: (err: ConnectionError) => void;
 }
 
@@ -141,7 +143,7 @@ export class Server extends EventEmitter<
     }
 
     if (this.opts.editResponseHeaders) {
-      await this.opts.editResponseHeaders(responseHeaders, req);
+      await this.opts.editResponseHeaders(responseHeaders, req, server);
     }
 
     try {
@@ -171,7 +173,7 @@ export class Server extends EventEmitter<
 
     if (this.opts.allowRequest) {
       try {
-        await this.opts.allowRequest(req);
+        await this.opts.allowRequest(req, server);
       } catch (reason) {
         this.emitReserved("connection_error", {
           req,
@@ -354,18 +356,18 @@ export class Server extends EventEmitter<
     });
 
     if (isUpgrade) {
-      this.emitReserved("connection", socket, req);
+      this.emitReserved("connection", socket, req, server);
       // @ts-expect-error request was upgraded, nothing to do
       return;
     }
 
     if (this.opts.editHandshakeHeaders) {
-      await this.opts.editHandshakeHeaders(responseHeaders, req);
+      await this.opts.editHandshakeHeaders(responseHeaders, req, server);
     }
 
     const promise = (transport as Polling).onRequest(req, responseHeaders);
 
-    this.emitReserved("connection", socket, req);
+    this.emitReserved("connection", socket, req, server);
 
     return promise;
   }
