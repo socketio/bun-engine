@@ -44,8 +44,11 @@ export class Socket extends EventEmitter<
   private readonly opts: ServerOptions;
   private upgradeState: UpgradeState = "not_upgraded";
   private writeBuffer: Packet[] = [];
-  private pingIntervalTimerId?: NodeJS.Timeout;
-  private pingTimeoutTimerId?: NodeJS.Timeout;
+  /*
+   * Note: using a single timer for all sockets seems to result in a higher CPU consumption than using one timer for each socket
+   */
+  private pingIntervalTimer?: Timer;
+  private pingTimeoutTimer?: Timer;
 
   constructor(id: string, opts: ServerOptions, transport: Transport) {
     super();
@@ -101,7 +104,7 @@ export class Socket extends EventEmitter<
       case "pong":
         debug("got pong");
 
-        clearTimeout(this.pingTimeoutTimerId);
+        clearTimeout(this.pingTimeoutTimer);
         this.schedulePing();
 
         this.emitReserved("heartbeat");
@@ -136,7 +139,11 @@ export class Socket extends EventEmitter<
    * @private
    */
   private schedulePing() {
-    this.pingIntervalTimerId = setTimeout(() => {
+    if (this.pingTimeoutTimer) {
+      this.pingIntervalTimer?.refresh();
+      return;
+    }
+    this.pingIntervalTimer = setTimeout(() => {
       debug(
         `writing ping packet - expecting pong within ${this.opts.pingTimeout} ms`,
       );
@@ -151,11 +158,9 @@ export class Socket extends EventEmitter<
    * @private
    */
   private resetPingTimeout() {
-    clearTimeout(this.pingTimeoutTimerId);
-    this.pingTimeoutTimerId = setTimeout(() => {
-      if (this.readyState !== "closed") {
-        this.onClose("ping timeout");
-      }
+    clearTimeout(this.pingTimeoutTimer);
+    this.pingTimeoutTimer = setTimeout(() => {
+      this.onClose("ping timeout");
     }, this.opts.pingTimeout);
   }
 
@@ -259,8 +264,8 @@ export class Socket extends EventEmitter<
     debug(`socket closed due to ${reason}`);
 
     this.readyState = "closed";
-    clearTimeout(this.pingIntervalTimerId);
-    clearTimeout(this.pingTimeoutTimerId);
+    clearTimeout(this.pingIntervalTimer);
+    clearTimeout(this.pingTimeoutTimer);
 
     this.closeTransport();
     this.emitReserved("close", reason);
