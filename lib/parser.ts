@@ -40,15 +40,11 @@ const ERROR_PACKET: Packet = { type: "error", data: "parser error" };
 type BinaryType = "arraybuffer" | "blob";
 
 export const Parser = {
-  encodePacket(
-    { type, data }: Packet,
-    supportsBinary: boolean,
-    callback: (encodedPacket: RawData) => void,
-  ) {
+  encodePacket({ type, data }: Packet, supportsBinary: boolean): RawData {
     if (Buffer.isBuffer(data)) {
-      return callback(supportsBinary ? data : "b" + data.toString("base64"));
+      return supportsBinary ? data : "b" + data.toString("base64");
     } else {
-      return callback(PACKET_TYPES.get(type) + (data || ""));
+      return PACKET_TYPES.get(type) + (data || "");
     }
   },
 
@@ -81,21 +77,14 @@ export const Parser = {
         };
   },
 
-  encodePayload(packets: Packet[], callback: (encodedPayload: string) => void) {
-    // some packets may be added to the array while encoding, so the initial length must be saved
-    const length = packets.length;
-    const encodedPackets = new Array(length);
-    let count = 0;
+  encodePayload(packets: Packet[]) {
+    const encodedPackets = [];
 
-    packets.forEach((packet, i) => {
-      // force base64 encoding for binary packets
-      this.encodePacket(packet, false, (encodedPacket) => {
-        encodedPackets[i] = encodedPacket;
-        if (++count === length) {
-          callback(encodedPackets.join(SEPARATOR));
-        }
-      });
-    });
+    for (const packet of packets) {
+      encodedPackets.push(this.encodePacket(packet, false));
+    }
+
+    return encodedPackets.join(SEPARATOR);
   },
 
   decodePayload(encodedPayload: string, binaryType?: BinaryType): Packet[] {

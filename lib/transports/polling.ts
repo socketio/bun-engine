@@ -107,7 +107,7 @@ export class Polling extends Transport {
 
   public send(packets: Packet[]) {
     this.writable = false;
-    Parser.encodePayload(packets, (data: string) => this.write(data));
+    this.write(Parser.encodePayload(packets));
   }
 
   /**
