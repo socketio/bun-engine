@@ -23,6 +23,7 @@ export class WS extends Transport {
     for (const packet of packets) {
       const data = Parser.encodePacket(packet, true);
       if (this.writable && this.socket?.readyState === WebSocket.OPEN) {
+        // TODO use ws.cork() once https://github.com/oven-sh/bun/issues/21588 is resolved
         this.socket.send(data);
       }
     }
