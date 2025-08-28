@@ -413,6 +413,8 @@ export class Server extends EventEmitter<
    * });
    */
   public handler() {
+    const idleTimeoutInSeconds = Math.ceil(2 * this.opts.pingInterval / 1000);
+
     return {
       fetch: (req: Request, server: Bun.Server) => {
         const url = new URL(req.url);
@@ -434,7 +436,11 @@ export class Server extends EventEmitter<
         close: (ws: BunWebSocket, code: number, message: string) => {
           this.onWebSocketClose(ws, code, message);
         },
+        maxPayloadLength: this.opts.maxHttpBufferSize,
       },
+
+      idleTimeout: idleTimeoutInSeconds,
+      maxRequestBodySize: this.opts.maxHttpBufferSize,
     };
   }
 }
