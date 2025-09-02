@@ -413,7 +413,7 @@ export class Server extends EventEmitter<
    * });
    */
   public handler() {
-    const idleTimeoutInSeconds = Math.ceil(2 * this.opts.pingInterval / 1000);
+    const idleTimeoutInSeconds = Math.ceil((2 * this.opts.pingInterval) / 1000);
 
     return {
       fetch: (req: Request, server: Bun.Server) => {
