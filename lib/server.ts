@@ -204,6 +204,7 @@ export class Server extends EventEmitter<
         const transport = new WS(this.opts);
 
         const isSuccess = server.upgrade(req, {
+          headers: responseHeaders,
           data: {
             transport,
           },
@@ -333,6 +334,7 @@ export class Server extends EventEmitter<
       transport = new WS(this.opts);
 
       const isSuccess = server.upgrade(req, {
+        headers: responseHeaders,
         data: {
           transport,
         },
