@@ -13,6 +13,7 @@ Reference: https://socket.io/
   * [How to use](#how-to-use)
     * [With Bun's HTTP server](#with-buns-http-server)
     * [With Hono](#with-hono)
+    * [With Elysia](#with-elysia)
   * [Options](#options)
     * [`path`](#path)
     * [`pingTimeout`](#pingtimeout)
@@ -92,6 +93,34 @@ export default {
 ```
 
 Reference: https://hono.dev/docs/
+
+### With Elysia
+
+Requires [`elysia@>=1.3.21`](https://github.com/elysiajs/elysia/pull/1358).
+
+```js
+import { Server as Engine } from "@socket.io/bun-engine";
+import { Server } from "socket.io";
+import { Elysia } from "elysia";
+
+const io = new Server();
+const engine = new Engine();
+
+io.bind(engine);
+
+io.on("connection", (socket) => {
+  // ...
+});
+
+const app = new Elysia()
+  .all('/socket.io/', ({ request, server }) => engine.handleRequest(request, server))
+  .listen({
+    port: 3000,
+    ...engine.handler(),
+  });
+```
+
+Reference: https://elysiajs.com/at-glance.html
 
 ## Options
 
