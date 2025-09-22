@@ -212,14 +212,12 @@ export class Server extends EventEmitter<
 
         debug(`upgrade was successful: ${isSuccess}`);
 
-        if (isSuccess) {
-          socket._maybeUpgrade(transport);
-
-          // @ts-expect-error request was upgraded, nothing to do
-          return;
-        } else {
+        if (!isSuccess) {
           return new Response(null, { status: 500 });
         }
+
+        socket._maybeUpgrade(transport);
+        return new Response(null);
       }
 
       debug("setting new request for existing socket");
@@ -359,8 +357,7 @@ export class Server extends EventEmitter<
 
     if (isUpgrade) {
       this.emitReserved("connection", socket, req, server);
-      // @ts-expect-error request was upgraded, nothing to do
-      return;
+      return new Response(null);
     }
 
     if (this.opts.editHandshakeHeaders) {

@@ -34,3 +34,6 @@ jobs:
 
       - name: Run tests
         run: bun test
+
+      - name: Run tests with Hono framework
+        run: USE_HONO=1 bun test

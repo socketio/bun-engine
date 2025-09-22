@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll } from "bun:test";
 import { Server, type BunWebSocket, type RawData } from "../lib";
 import { createWebSocket, waitFor, sleep } from "./util";
+import { Hono } from "hono";
+import { logger } from "hono/logger";
 
 const URL = "http://localhost:3000";
 const WS_URL = URL.replace("http", "ws");
@@ -14,19 +16,37 @@ async function initLongPollingSession() {
   return JSON.parse(content.substring(1)).sid;
 }
 
-// imported from https://github.com/socketio/socket.io/blob/main/docs/engine.io-protocol/v4-test-suite
-describe("Engine.IO protocol", () => {
-  beforeAll(() => {
-    const engine = new Server({
-      pingInterval: PING_INTERVAL,
-      pingTimeout: PING_TIMEOUT,
+function setup() {
+  const engine = new Server({
+    pingInterval: PING_INTERVAL,
+    pingTimeout: PING_TIMEOUT,
+  });
+
+  engine.on("connection", (socket) => {
+    socket.on("data", (data: RawData) => {
+      socket.write(data);
+    });
+  });
+
+  if (process.env.USE_HONO) {
+    console.log("Using Hono framework");
+    const app = new Hono();
+
+    app.use(logger());
+
+    app.all("/engine.io/", async (c) => {
+      const request = c.req.raw;
+      const server = c.env as Bun.Server;
+      return engine.handleRequest(request, server);
     });
 
-    engine.on("connection", (socket) => {
-      socket.on("data", (data: RawData) => {
-        socket.write(data);
-      });
+    Bun.serve({
+      port: 3000,
+      fetch: app.fetch,
+      websocket: engine.handler().websocket,
     });
+  } else {
+    console.log("Using Bun's native HTTP server");
 
     Bun.serve({
       port: 3000,
@@ -47,7 +67,12 @@ describe("Engine.IO protocol", () => {
         },
       },
     });
-  });
+  }
+}
+
+// imported from https://github.com/socketio/socket.io/blob/main/docs/engine.io-protocol/v4-test-suite
+describe("Engine.IO protocol", () => {
+  beforeAll(() => setup());
 
   describe("handshake", () => {
     describe("HTTP long-polling", () => {
