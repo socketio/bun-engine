@@ -326,6 +326,10 @@ export class Server extends EventEmitter<
   ): Promise<Response> {
     const id = generateId();
 
+    if (this.opts.editHandshakeHeaders) {
+      await this.opts.editHandshakeHeaders(responseHeaders, req, server);
+    }
+
     let isUpgrade = req.headers.has("upgrade");
     let transport: Transport;
     if (isUpgrade) {
@@ -358,10 +362,6 @@ export class Server extends EventEmitter<
     if (isUpgrade) {
       this.emitReserved("connection", socket, req, server);
       return new Response(null);
-    }
-
-    if (this.opts.editHandshakeHeaders) {
-      await this.opts.editHandshakeHeaders(responseHeaders, req, server);
     }
 
     const promise = (transport as Polling).onRequest(req, responseHeaders);
