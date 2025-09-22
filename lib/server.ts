@@ -347,7 +347,7 @@ export class Server extends EventEmitter<
 
     debug(`new socket ${id}`);
 
-    const socket = new Socket(id, this.opts, transport);
+    const socket = new Socket(id, this.opts, transport, req);
     this.clients.set(id, socket);
 
     socket.once("close", (reason) => {

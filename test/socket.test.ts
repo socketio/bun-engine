@@ -25,41 +25,45 @@ async function initSocketIOConnection() {
   return socket;
 }
 
-// imported from https://github.com/socketio/socket.io/tree/main/docs/socket.io-protocol/v5-test-suite
-describe("Socket.IO protocol", () => {
-  beforeAll(() => {
-    const io = new Server();
+function setup() {
+  const io = new Server();
 
-    const engine = new Engine({
-      path: "/socket.io/",
-      pingInterval: PING_INTERVAL,
-      pingTimeout: PING_TIMEOUT,
+  const engine = new Engine({
+    path: "/socket.io/",
+    pingInterval: PING_INTERVAL,
+    pingTimeout: PING_TIMEOUT,
+  });
+
+  io.bind(engine);
+
+  io.on("connection", (socket) => {
+    expect(socket.handshake.headers).toContainKey("host");
+
+    socket.emit("auth", socket.handshake.auth);
+
+    socket.on("message", (...args) => {
+      socket.emit.apply(socket, ["message-back", ...args]);
     });
 
-    io.bind(engine);
-
-    io.on("connection", (socket) => {
-      socket.emit("auth", socket.handshake.auth);
-
-      socket.on("message", (...args) => {
-        socket.emit.apply(socket, ["message-back", ...args]);
-      });
-
-      socket.on("message-with-ack", (...args) => {
-        const ack = args.pop();
-        ack(...args);
-      });
-    });
-
-    io.of("/custom").on("connection", (socket) => {
-      socket.emit("auth", socket.handshake.auth);
-    });
-
-    Bun.serve({
-      port: 3001,
-      ...engine.handler(),
+    socket.on("message-with-ack", (...args) => {
+      const ack = args.pop();
+      ack(...args);
     });
   });
+
+  io.of("/custom").on("connection", (socket) => {
+    socket.emit("auth", socket.handshake.auth);
+  });
+
+  Bun.serve({
+    port: 3001,
+    ...engine.handler(),
+  });
+}
+
+// imported from https://github.com/socketio/socket.io/tree/main/docs/socket.io-protocol/v5-test-suite
+describe("Socket.IO protocol", () => {
+  beforeAll(() => setup());
 
   describe("connect", () => {
     it("should allow connection to the main namespace", async () => {

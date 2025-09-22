@@ -40,6 +40,7 @@ export class Socket extends EventEmitter<
   public readonly id: string;
   public readyState: ReadyState = "opening";
   public transport: Transport;
+  public readonly request;
 
   private readonly opts: ServerOptions;
   private upgradeState: UpgradeState = "not_upgraded";
@@ -50,7 +51,12 @@ export class Socket extends EventEmitter<
   private pingIntervalTimer?: Timer;
   private pingTimeoutTimer?: Timer;
 
-  constructor(id: string, opts: ServerOptions, transport: Transport) {
+  constructor(
+    id: string,
+    opts: ServerOptions,
+    transport: Transport,
+    req: Request,
+  ) {
     super();
 
     this.id = id;
@@ -58,6 +64,14 @@ export class Socket extends EventEmitter<
 
     this.transport = transport;
     this.bindTransport(transport);
+
+    // we store the headers of the handshake request, so that they are available in the `socket.handshake` attribute in
+    // the `socket.io` library
+    this.request = {
+      headers: Object.fromEntries(req.headers.entries()),
+      connection: {},
+    };
+
     this.onOpen();
   }
 
