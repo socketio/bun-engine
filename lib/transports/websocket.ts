@@ -4,9 +4,11 @@ import { debuglog } from "node:util";
 
 const debug = debuglog("engine.io:websocket");
 
-export type BunWebSocket = Bun.ServerWebSocket<{
+export type WebSocketData = {
   transport: WS;
-}>;
+};
+
+export type BunWebSocket = Bun.ServerWebSocket<WebSocketData>;
 
 export class WS extends Transport {
   private socket?: BunWebSocket;

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll } from "bun:test";
-import { Server, type BunWebSocket, type RawData } from "../lib";
+import {
+  Server,
+  type BunWebSocket,
+  type WebSocketData,
+  type RawData,
+} from "../lib";
 import { createWebSocket, waitFor, sleep } from "./util";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
@@ -36,7 +41,7 @@ function setup() {
 
     app.all("/engine.io/", async (c) => {
       const request = c.req.raw;
-      const server = c.env as Bun.Server;
+      const server = c.env as Bun.Server<WebSocketData>;
       return engine.handleRequest(request, server);
     });
 
@@ -56,6 +61,8 @@ function setup() {
       },
 
       websocket: {
+        data: {} as WebSocketData,
+
         open(ws: BunWebSocket) {
           engine.onWebSocketOpen(ws);
         },

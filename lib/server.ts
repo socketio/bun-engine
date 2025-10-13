@@ -1,7 +1,11 @@
 import { EventEmitter } from "./event-emitter";
 import { Socket } from "./socket";
 import { Polling } from "./transports/polling";
-import { WS, type BunWebSocket } from "./transports/websocket";
+import {
+  WS,
+  type BunWebSocket,
+  type WebSocketData,
+} from "./transports/websocket";
 import { addCorsHeaders, type CorsOptions } from "./cors";
 import { Transport } from "./transport";
 import { generateId } from "./util";
@@ -42,7 +46,10 @@ export interface ServerOptions {
    * A function that receives a given handshake or upgrade request as its first parameter,
    * and can decide whether to continue or not.
    */
-  allowRequest?: (req: Request, server: Bun.Server) => Promise<void>;
+  allowRequest?: (
+    req: Request,
+    server: Bun.Server<WebSocketData>,
+  ) => Promise<void>;
   /**
    * The options related to Cross-Origin Resource Sharing (CORS)
    */
@@ -53,7 +60,7 @@ export interface ServerOptions {
   editHandshakeHeaders?: (
     responseHeaders: Headers,
     req: Request,
-    server: Bun.Server,
+    server: Bun.Server<WebSocketData>,
   ) => void | Promise<void>;
   /**
    * A function that allows to edit the response headers of all requests
@@ -61,7 +68,7 @@ export interface ServerOptions {
   editResponseHeaders?: (
     responseHeaders: Headers,
     req: Request,
-    server: Bun.Server,
+    server: Bun.Server<WebSocketData>,
   ) => void | Promise<void>;
 }
 
@@ -73,7 +80,11 @@ interface ConnectionError {
 }
 
 interface ServerReservedEvents {
-  connection: (socket: Socket, request: Request, server: Bun.Server) => void;
+  connection: (
+    socket: Socket,
+    request: Request,
+    server: Bun.Server<WebSocketData>,
+  ) => void;
   connection_error: (err: ConnectionError) => void;
 }
 
@@ -127,7 +138,7 @@ export class Server extends EventEmitter<
    */
   public async handleRequest(
     req: Request,
-    server: Bun.Server,
+    server: Bun.Server<WebSocketData>,
   ): Promise<Response> {
     const url = new URL(req.url);
 
@@ -321,7 +332,7 @@ export class Server extends EventEmitter<
    */
   private async handshake(
     req: Request,
-    server: Bun.Server,
+    server: Bun.Server<WebSocketData>,
     responseHeaders: Headers,
   ): Promise<Response> {
     const id = generateId();
@@ -338,7 +349,7 @@ export class Server extends EventEmitter<
       const isSuccess = server.upgrade(req, {
         headers: responseHeaders,
         data: {
-          transport,
+          transport: transport as WS,
         },
       });
 
@@ -415,7 +426,7 @@ export class Server extends EventEmitter<
     const idleTimeoutInSeconds = Math.ceil((2 * this.opts.pingInterval) / 1000);
 
     return {
-      fetch: (req: Request, server: Bun.Server) => {
+      fetch: (req: Request, server: Bun.Server<WebSocketData>) => {
         const url = new URL(req.url);
 
         if (url.pathname === this.opts.path) {
