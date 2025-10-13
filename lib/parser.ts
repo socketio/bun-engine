@@ -48,7 +48,7 @@ export const Parser = {
     }
   },
 
-  decodePacket(encodedPacket: RawData, binaryType?: BinaryType): Packet {
+  decodePacket(encodedPacket: RawData, _binaryType?: BinaryType): Packet {
     if (typeof encodedPacket !== "string") {
       return {
         type: "message",

@@ -46,7 +46,7 @@ export class WS extends Transport {
     this.onPacket(Parser.decodePacket(message));
   }
 
-  public onCloseEvent(code: number, message: string) {
+  public onCloseEvent(_code: number, _message: string) {
     debug("on close");
     this.onClose();
   }
