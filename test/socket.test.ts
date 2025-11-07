@@ -38,6 +38,10 @@ function setup() {
 
   io.on("connection", (socket) => {
     expect(socket.handshake.headers).toContainKey("host");
+    expect(socket.handshake.query.EIO).toEqual("4");
+    expect(socket.handshake.url).toStartWith(
+      "http://localhost:3001/socket.io/?EIO=4",
+    );
 
     socket.emit("auth", socket.handshake.auth);
 

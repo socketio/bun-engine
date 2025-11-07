@@ -10,6 +10,17 @@ type ReadyState = "opening" | "open" | "closing" | "closed";
 
 type UpgradeState = "not_upgraded" | "upgrading" | "upgraded";
 
+// this is the format expected by the `socket.io` library
+// see https://github.com/socketio/socket.io/blob/cf6816afcff25c227b14ae6981e421bcad5af331/packages/socket.io/lib/socket.ts#L201-L215
+export interface HandshakeRequestReference {
+  url: string;
+  headers: Record<string, string>;
+  _query: Record<string, string>;
+  connection: {
+    encrypted: boolean;
+  };
+}
+
 export type CloseReason =
   | "transport error"
   | "transport close"
@@ -40,7 +51,7 @@ export class Socket extends EventEmitter<
   public readonly id: string;
   public readyState: ReadyState = "opening";
   public transport: Transport;
-  public readonly request;
+  public readonly request: HandshakeRequestReference;
 
   private readonly opts: ServerOptions;
   private upgradeState: UpgradeState = "not_upgraded";
@@ -55,7 +66,7 @@ export class Socket extends EventEmitter<
     id: string,
     opts: ServerOptions,
     transport: Transport,
-    req: Request,
+    req: HandshakeRequestReference,
   ) {
     super();
 
@@ -65,12 +76,7 @@ export class Socket extends EventEmitter<
     this.transport = transport;
     this.bindTransport(transport);
 
-    // we store the headers of the handshake request, so that they are available in the `socket.handshake` attribute in
-    // the `socket.io` library
-    this.request = {
-      headers: Object.fromEntries(req.headers.entries()),
-      connection: {},
-    };
+    this.request = req;
 
     this.onOpen();
   }

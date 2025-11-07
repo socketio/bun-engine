@@ -235,7 +235,7 @@ export class Server extends EventEmitter<
 
       return (socket.transport as Polling).onRequest(req, responseHeaders);
     } else {
-      return this.handshake(req, server, responseHeaders);
+      return this.handshake(req, server, url, responseHeaders);
     }
   }
 
@@ -327,12 +327,14 @@ export class Server extends EventEmitter<
    *
    * @param req
    * @param server
+   * @param url
    * @param responseHeaders
    * @private
    */
   private async handshake(
     req: Request,
     server: Bun.Server<WebSocketData>,
+    url: URL,
     responseHeaders: Headers,
   ): Promise<Response> {
     const id = generateId();
@@ -362,7 +364,15 @@ export class Server extends EventEmitter<
 
     debug(`new socket ${id}`);
 
-    const socket = new Socket(id, this.opts, transport, req);
+    const socket = new Socket(id, this.opts, transport, {
+      url: req.url,
+      headers: Object.fromEntries(req.headers.entries()),
+      _query: Object.fromEntries(url.searchParams.entries()),
+      connection: {
+        encrypted: ["https", "wss"].includes(url.protocol),
+      },
+    });
+
     this.clients.set(id, socket);
 
     socket.once("close", (reason) => {
