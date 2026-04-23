@@ -1,4 +1,4 @@
-# reference: https://docs.npmjs.com/generating-provenance-statements
+# reference: https://docs.npmjs.com/trusted-publishers#for-github-actions
 
 name: Publish
 
@@ -27,13 +27,11 @@ jobs:
       - name: Compile project
         run: bun run compile
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
 
       - name: Publish package
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
