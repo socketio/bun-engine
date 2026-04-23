@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "./lib",
     "outDir": "./dist",
     "declaration": true,
 
@@ -10,6 +11,7 @@
     "moduleDetection": "force",
     "jsx": "react-jsx",
     "allowJs": true,
+    "types": ["bun"],
 
     // Bundler mode
     "moduleResolution": "bundler",

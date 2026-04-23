@@ -19,7 +19,7 @@
     "socket.io": "^4.8.1"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "*"
   },
   "license": "MIT",
   "homepage": "https://github.com/socketio/bun-engine#readme",

@@ -33,7 +33,7 @@ function setup() {
     });
   });
 
-  if (process.env.USE_HONO) {
+  if (process.env["USE_HONO"]) {
     console.log("Using Hono framework");
     const app = new Hono();
 
