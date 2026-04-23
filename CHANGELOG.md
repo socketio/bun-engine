@@ -2,10 +2,15 @@
 
 | Version                  | Release date   |
 |--------------------------|----------------|
+| [0.1.1](#011-2026-04-23) | April 2026     |
 | [0.1.0](#010-2025-11-07) | November 2025  |
 | [0.0.3](#003-2025-09-22) | September 2025 |
 | [0.0.2](#002-2025-08-28) | August 2025    |
 | [0.0.1](#001-2025-08-16) | August 2025    |
+
+## [0.1.1](https://github.com/socketio/bun-engine/compare/0.1.0...0.1.1) (2026-04-23)
+
+TypeScript has been upgraded to v6, and the `peerDependency` set to `*` to let the user decide which TypeScript version to use.
 
 
 ## [0.1.0](https://github.com/socketio/bun-engine/compare/0.0.3...0.1.0) (2025-11-07)
