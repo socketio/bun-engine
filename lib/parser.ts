@@ -10,7 +10,7 @@ export type PacketType =
   | "noop"
   | "error";
 
-export type RawData = string | Buffer;
+export type RawData = string | Bun.BufferSource;
 
 export interface Packet {
   type: PacketType;
@@ -39,12 +39,26 @@ const ERROR_PACKET: Packet = { type: "error", data: "parser error" };
 
 type BinaryType = "arraybuffer" | "blob";
 
+function toBuffer(data: Bun.BufferSource) {
+  if (Buffer.isBuffer(data)) {
+    return data;
+  } else if (data instanceof ArrayBuffer) {
+    return Buffer.from(data);
+  } else if (ArrayBuffer.isView(data)) {
+    return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+  } else {
+    throw new Error("invalid binary data");
+  }
+}
+
 export const Parser = {
   encodePacket({ type, data }: Packet, supportsBinary: boolean): RawData {
-    if (Buffer.isBuffer(data)) {
-      return supportsBinary ? data : "b" + data.toString("base64");
+    const isBinary = data instanceof ArrayBuffer || ArrayBuffer.isView(data);
+
+    if (isBinary) {
+      return supportsBinary ? data : "b" + toBuffer(data).toString("base64");
     } else {
-      return PACKET_TYPES.get(type) + (data || "");
+      return PACKET_TYPES.get(type)! + (data || "");
     }
   },
 
